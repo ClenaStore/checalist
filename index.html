@@ -14,13 +14,50 @@
   --error:#ef4444;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
-header{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#000;text-align:center;padding:16px;font-weight:700}
-main{display:flex;justify-content:center;align-items:center;min-height:calc(100vh - 64px)}
-.section{background:var(--card);padding:24px;border-radius:16px;width:100%;max-width:400px;text-align:center}
-.input,.select{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:0;background:#1e293b;color:#fff}
-.btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);font-weight:600;cursor:pointer}
-.error{color:var(--error);height:16px}
+body{
+  margin:0;font-family:Inter,sans-serif;background:var(--bg);
+  color:var(--text);min-height:100vh;
+}
+header{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:#000;text-align:center;padding:16px;font-weight:700;
+}
+main{
+  display:flex;align-items:center;justify-content:center;
+  min-height:calc(100vh - 64px);
+}
+.section{
+  background:var(--card);
+  border-radius:16px;
+  padding:24px;
+  width:100%;
+  max-width:400px;
+  text-align:center;
+  box-shadow:var(--shadow);
+}
+h2{margin-top:0;color:var(--accent2)}
+.input,.select{
+  width:100%;padding:12px;border-radius:10px;border:0;
+  background:#1e293b;color:#fff;margin:8px 0;
+}
+.btn{
+  width:100%;padding:12px;border-radius:10px;border:0;
+  background:var(--accent);color:#000;font-weight:600;
+  cursor:pointer;
+}
+.error{color:var(--error);font-size:13px;height:16px}
+.cards{
+  display:grid;gap:16px;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  margin-top:20px;
+}
+.card{
+  background:var(--card);padding:20px;border-radius:14px;
+  cursor:pointer;transition:.2s;
+}
+.card:hover{transform:translateY(-3px);background:#1c2540}
+.card h3{margin:0;color:var(--accent2)}
+.card p{margin:6px 0 0;font-size:13px;color:var(--muted)}
 </style>
 </head>
 
@@ -30,10 +67,11 @@ main{display:flex;justify-content:center;align-items:center;min-height:calc(100v
 
 <main>
 
+<!-- LOGIN -->
 <div class="section" id="loginBox">
   <h2>Identificação</h2>
 
-  <select id="usuarioSelect" class="select">
+  <select id="usuario" class="select">
     <option value="">Selecione o gerente</option>
     <option>MERCATTO_DHEURE</option>
     <option>MERCATTO_YURI</option>
@@ -49,9 +87,17 @@ main{display:flex;justify-content:center;align-items:center;min-height:calc(100v
   <div class="error" id="msg"></div>
 </div>
 
+<!-- HOME -->
 <div class="section" id="homeBox" style="display:none">
   <h2 id="empresaNome"></h2>
-  <button class="btn" onclick="logout()">Sair</button>
+
+  <div class="cards">
+    <div class="card" onclick="abrir('checklist.html')">
+      <h3>✅ Check-list</h3><p>Tarefas diárias</p>
+    </div>
+  </div>
+
+  <button class="btn" style="margin-top:20px" onclick="logout()">Sair</button>
 </div>
 
 </main>
@@ -69,30 +115,33 @@ const $ = s => document.querySelector(s);
 /* AUTOLOGIN */
 const cache = localStorage.getItem("usuario");
 if(cache){
-  const data = JSON.parse(cache);
-  $("#empresaNome").textContent = `${data.empresa} • ${data.gerente}`;
+  const u = JSON.parse(cache);
+  $("#empresaNome").textContent = `${u.empresa} • ${u.gerente}`;
   $("#loginBox").style.display="none";
   $("#homeBox").style.display="block";
 }
 
 /* LOGIN */
 async function login(){
-  const usuario=$("#usuarioSelect").value;
-  const senha=$("#senha").value;
-  const msg=$("#msg");
+  const usuario = $("#usuario").value;
+  const senha = $("#senha").value;
+  const msg = $("#msg");
 
-  if(!usuario||!senha){msg.textContent="Preencha tudo";return;}
+  if(!usuario || !senha){
+    msg.textContent = "Preencha todos os campos";
+    return;
+  }
 
   const { data, error } = await supabase
     .from("usuarios")
-    .select("usuario, gerente, empresa, senha_md5")
+    .select("usuario, gerente, empresa, senha")
     .eq("usuario", usuario)
-    .eq("senha_md5", await md5(senha))
+    .eq("senha", senha)
     .eq("ativo", true)
     .single();
 
   if(error || !data){
-    msg.textContent="Usuário ou senha inválidos";
+    msg.textContent = "Usuário ou senha inválidos";
     return;
   }
 
@@ -108,15 +157,11 @@ function logout(){
   location.reload();
 }
 
-/* MD5 */
-async function md5(str){
-  const buf = new TextEncoder().encode(str);
-  const hash = await crypto.subtle.digest("MD5", buf);
-  return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");
-}
+function abrir(p){ window.location.href = p; }
 
-window.login=login;
-window.logout=logout;
+window.login = login;
+window.logout = logout;
+window.abrir = abrir;
 </script>
 
 </body>
