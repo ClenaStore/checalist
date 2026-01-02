@@ -9,21 +9,35 @@
 
 <style>
 :root{
-  --bg:#0b0f19;--card:#131b2b;--accent:#ff8f1f;--accent2:#ffb347;
-  --text:#f1f5f9;--muted:#94a3b8;--shadow:0 4px 14px rgba(0,0,0,0.4);
+  --bg:#0b0f19;
+  --card:#131b2b;
+  --accent:#ff8f1f;
+  --accent2:#ffb347;
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+  --shadow:0 4px 14px rgba(0,0,0,.4);
   --error:#ef4444;
 }
 *{box-sizing:border-box}
 body{
-  margin:0;font-family:Inter,sans-serif;background:var(--bg);
-  color:var(--text);min-height:100vh;
+  margin:0;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
 }
 header{
   background:linear-gradient(90deg,var(--accent),var(--accent2));
-  color:#000;text-align:center;padding:16px;font-weight:700;
+  color:#000;
+  text-align:center;
+  padding:16px;
+  font-weight:700;
+  font-size:18px;
 }
 main{
-  display:flex;align-items:center;justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   min-height:calc(100vh - 64px);
 }
 .section{
@@ -35,29 +49,61 @@ main{
   text-align:center;
   box-shadow:var(--shadow);
 }
-h2{margin-top:0;color:var(--accent2)}
-.input,.select{
-  width:100%;padding:12px;border-radius:10px;border:0;
-  background:#1e293b;color:#fff;margin:8px 0;
+h2{
+  margin-top:0;
+  color:var(--accent2);
+}
+.input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:0;
+  background:#1e293b;
+  color:#fff;
+  margin:8px 0;
 }
 .btn{
-  width:100%;padding:12px;border-radius:10px;border:0;
-  background:var(--accent);color:#000;font-weight:600;
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:0;
+  background:var(--accent);
+  color:#000;
+  font-weight:600;
   cursor:pointer;
 }
-.error{color:var(--error);font-size:13px;height:16px}
+.btn:hover{background:var(--accent2)}
+.error{
+  color:var(--error);
+  font-size:13px;
+  height:16px;
+}
 .cards{
-  display:grid;gap:16px;
+  display:grid;
+  gap:16px;
   grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
   margin-top:20px;
 }
 .card{
-  background:var(--card);padding:20px;border-radius:14px;
-  cursor:pointer;transition:.2s;
+  background:var(--card);
+  padding:20px;
+  border-radius:14px;
+  cursor:pointer;
+  transition:.2s;
 }
-.card:hover{transform:translateY(-3px);background:#1c2540}
-.card h3{margin:0;color:var(--accent2)}
-.card p{margin:6px 0 0;font-size:13px;color:var(--muted)}
+.card:hover{
+  transform:translateY(-3px);
+  background:#1c2540;
+}
+.card h3{
+  margin:0;
+  color:var(--accent2);
+}
+.card p{
+  margin:6px 0 0;
+  font-size:13px;
+  color:var(--muted);
+}
 </style>
 </head>
 
@@ -71,18 +117,9 @@ h2{margin-top:0;color:var(--accent2)}
 <div class="section" id="loginBox">
   <h2>Identificação</h2>
 
-  <select id="usuario" class="select">
-    <option value="">Selecione o gerente</option>
-    <option>MERCATTO_DHEURE</option>
-    <option>MERCATTO_YURI</option>
-    <option>MERCATTO_GLEIDSA</option>
-    <option>MERCATTO_JAQUELINE</option>
-    <option>MERCATTO_IVANIO</option>
-    <option>DELICIA_RUAN</option>
-    <option>DELICIA_VALCIR</option>
-  </select>
-
+  <input id="usuario" class="input" placeholder="Usuário">
   <input id="senha" type="password" class="input" placeholder="Senha">
+
   <button class="btn" onclick="login()">Entrar</button>
   <div class="error" id="msg"></div>
 </div>
@@ -93,7 +130,8 @@ h2{margin-top:0;color:var(--accent2)}
 
   <div class="cards">
     <div class="card" onclick="abrir('checklist.html')">
-      <h3>✅ Check-list</h3><p>Tarefas diárias</p>
+      <h3>✅ Check-list</h3>
+      <p>Tarefas diárias</p>
     </div>
   </div>
 
@@ -102,53 +140,59 @@ h2{margin-top:0;color:var(--accent2)}
 
 </main>
 
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+<script>
+/* ===========================
+   USUÁRIOS E SENHAS (FRONT)
+   =========================== */
+const USUARIOS = [
+  { usuario:'MERCATTO_DHEURE', senha:'Merc@2025', gerente:'Dheure', empresa:'Mercatto' },
+  { usuario:'MERCATTO_YURI', senha:'Merc@2025', gerente:'Yuri', empresa:'Mercatto' },
+  { usuario:'MERCATTO_GLEIDSA', senha:'Merc@2025', gerente:'Gleidsa', empresa:'Mercatto' },
+  { usuario:'MERCATTO_JAQUELINE', senha:'Merc@2025', gerente:'Jaqueline', empresa:'Mercatto' },
+  { usuario:'MERCATTO_IVANIO', senha:'Merc@2025', gerente:'Ivanio', empresa:'Mercatto' },
 
-const supabase = createClient(
-  "https://qkuilafoughsaykttjsc.supabase.co",
-  "sb_publishable_SCIIYvHVkFxUIs28r9Tw0A_jJEgCO3g"
-);
+  { usuario:'DELICIA_RUAN', senha:'Deli@2025', gerente:'Ruan', empresa:'Delícia' },
+  { usuario:'DELICIA_VALCIR', senha:'Deli@2025', gerente:'Valcir', empresa:'Delícia' }
+];
 
 const $ = s => document.querySelector(s);
 
 /* AUTOLOGIN */
-const cache = localStorage.getItem("usuario");
+const cache = localStorage.getItem("usuario_logado");
 if(cache){
   const u = JSON.parse(cache);
-  $("#empresaNome").textContent = `${u.empresa} • ${u.gerente}`;
-  $("#loginBox").style.display="none";
-  $("#homeBox").style.display="block";
+  entrar(u);
 }
 
 /* LOGIN */
-async function login(){
-  const usuario = $("#usuario").value;
-  const senha = $("#senha").value;
+function login(){
+  const usuario = $("#usuario").value.trim();
+  const senha = $("#senha").value.trim();
   const msg = $("#msg");
 
   if(!usuario || !senha){
-    msg.textContent = "Preencha todos os campos";
+    msg.textContent = "Informe usuário e senha";
     return;
   }
 
-  const { data, error } = await supabase
-    .from("usuarios")
-    .select("usuario, gerente, empresa, senha")
-    .eq("usuario", usuario)
-    .eq("senha", senha)
-    .eq("ativo", true)
-    .single();
+  const encontrado = USUARIOS.find(
+    u => u.usuario === usuario && u.senha === senha
+  );
 
-  if(error || !data){
+  if(!encontrado){
     msg.textContent = "Usuário ou senha inválidos";
     return;
   }
 
-  localStorage.setItem("usuario", JSON.stringify(data));
-  $("#empresaNome").textContent = `${data.empresa} • ${data.gerente}`;
-  $("#loginBox").style.display="none";
-  $("#homeBox").style.display="block";
+  localStorage.setItem("usuario_logado", JSON.stringify(encontrado));
+  entrar(encontrado);
+}
+
+/* ENTRAR */
+function entrar(u){
+  $("#empresaNome").textContent = `${u.empresa} • ${u.gerente}`;
+  $("#loginBox").style.display = "none";
+  $("#homeBox").style.display = "block";
 }
 
 /* LOGOUT */
@@ -157,11 +201,10 @@ function logout(){
   location.reload();
 }
 
-function abrir(p){ window.location.href = p; }
-
-window.login = login;
-window.logout = logout;
-window.abrir = abrir;
+/* ABRIR */
+function abrir(pagina){
+  window.location.href = pagina;
+}
 </script>
 
 </body>
