@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>✅ Checklist Diário</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0b0f19;--card:#131b2b;--accent:#ff8f1f;--accent2:#ffb347;
+  --text:#f1f5f9;--muted:#94a3b8;--shadow:0 4px 14px rgba(0,0,0,0.4);
+  --success:#22c55e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,sans-serif;background:var(--bg);
+  color:var(--text);min-height:100vh;
+}
+header{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:#000;padding:16px;font-weight:700;text-align:center;
+}
+main{padding:20px;max-width:800px;margin:auto;}
+h2{margin:0 0 10px;color:var(--accent2);}
+.setor{
+  background:var(--card);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+  padding:16px;
+}
+.setor h3{
+  margin:0 0 10px;
+  font-size:15px;
+  color:var(--accent);
+}
+.item{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.item:last-child{border-bottom:0}
+.item input{margin-top:4px}
+.voltar{
+  display:block;
+  margin-top:20px;
+  background:var(--accent);
+  color:#000;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  font-weight:600;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>✅ Checklist Diário</header>
+
+<main>
+  <h2 id="empresaNome"></h2>
+  <div id="lista"></div>
+
+  <a class="voltar" href="index.html">← Voltar ao painel</a>
+</main>
+
+<!-- SUPABASE -->
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+/* 🔐 CONFIG */
+const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
+const SUPABASE_ANON_KEY = "SUA-CHAVE-ANON";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const lista = document.getElementById("lista");
+const empresaNome = document.getElementById("empresaNome");
+
+/* 🔁 INIT */
+window.addEventListener("load", async () => {
+  const { data:{ session } } = await supabase.auth.getSession();
+
+  if(!session){
+    window.location.href="index.html";
+    return;
+  }
+
+  carregarChecklist(session.user.id);
+});
+
+/* 📋 CARREGA CHECKLIST */
+async function carregarChecklist(userId){
+
+  /* pega empresa do usuário */
+  const { data:perfil } = await supabase
+    .from("usuarios")
+    .select("empresa")
+    .eq("id", userId)
+    .single();
+
+  if(!perfil) return;
+
+  empresaNome.textContent = perfil.empresa;
+
+  /* busca checklist */
+  const { data, error } = await supabase
+    .from("checklist_base")
+    .select("*")
+    .eq("empresa", perfil.empresa)
+    .eq("ativo", true)
+    .order("setor", { ascending:true });
+
+  if(error){
+    lista.innerHTML = "<p>Erro ao carregar checklist.</p>";
+    return;
+  }
+
+  renderizar(data);
+}
+
+/* 🧩 RENDER */
+function renderizar(itens){
+  lista.innerHTML = "";
+
+  const grupos = {};
+
+  itens.forEach(i=>{
+    if(!grupos[i.setor]) grupos[i.setor]=[];
+    grupos[i.setor].push(i);
+  });
+
+  Object.keys(grupos).forEach(setor=>{
+    const box=document.createElement("div");
+    box.className="setor";
+    box.innerHTML=`<h3>${setor}</h3>`;
+
+    grupos[setor].forEach(i=>{
+      box.innerHTML+=`
+        <div class="item">
+          <input type="checkbox">
+          <span>${i.item}</span>
+        </div>
+      `;
+    });
+
+    lista.appendChild(box);
+  });
+}
+</script>
+
+</body>
+</html>
